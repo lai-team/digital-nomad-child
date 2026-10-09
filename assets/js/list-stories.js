@@ -116,7 +116,11 @@ jQuery( function ( $ ) {
                             'previous': 0
                         },
                         success: function(data){
-                            data = JSON.parse(data);
+                            // wp_send_json() sends Content-Type: application/json, so jQuery has
+                            // already parsed this. The old endpoint sent text/html, which is
+                            // why an unconditional JSON.parse used to work -- it now throws
+                            // '"[object Object]" is not valid JSON'. Accept either shape.
+                            data = (typeof data === 'string') ? JSON.parse(data) : data;
                             if(!data.html){
                                 window.load_more_top = false;
                                 //$('#load-more-top ').remove();
@@ -169,7 +173,7 @@ jQuery( function ( $ ) {
                             'previous': 1
                         },
                         success: function(data){
-                            data = JSON.parse(data);
+                            data = (typeof data === 'string') ? JSON.parse(data) : data;
                             //console.log(data,'false-bottom');
                             //console.log(data.coords,'coords');
                             //console.log(postCoords,'postCoords');
@@ -281,7 +285,7 @@ jQuery( function ( $ ) {
                     //console.log(data);
                     $('#journey-story-wrapper').hide();
                     $('#search-story-wrapper').show();
-                    data = JSON.parse(data);
+                    data = (typeof data === 'string') ? JSON.parse(data) : data;
                     //console.log(data,'search results');
 
                     $('#search-story-wrapper').html(data.html);
