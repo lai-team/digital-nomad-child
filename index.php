@@ -79,7 +79,18 @@
         echo "<div id='search-story-wrapper'>";
         echo "</div>";
         do_action( 'digitalnomad_after_inner_content' );
-        if(!is_home(  ))echo "<input type='hidden' id='journey_id' value=".get_queried_object(  )->term_id.">";
+        /*
+ * get_queried_object() is only a WP_Term on a term archive. index.php is also
+ * the fallback template for date archives (null), author archives (WP_User)
+ * and post-type archives (WP_Post_Type), so this warned on PHP 8 and emitted
+ * `value=>`. list-stories.js then read an empty journey_id and silently
+ * dropped the category restriction from every subsequent AJAX load.
+ * The attribute was also unquoted.
+ */
+$bv_queried = get_queried_object();
+if ( $bv_queried instanceof WP_Term ) {
+	echo '<input type="hidden" id="journey_id" value="' . esc_attr( $bv_queried->term_id ) . '">';
+}
 	wp_localize_script('bv-list-stories-script','initCoords',$initCoords);
 	//wp_localize_script('bv-list-stories-script','initQuery', get_queried_object);
 	//logErrors('init c00rds '.json_encode($initCoords));

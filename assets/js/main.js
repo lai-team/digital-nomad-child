@@ -77,10 +77,14 @@ jQuery(document).ready(function(){
     });
 });
 
-function expandJourney(ob){
-    let journeyDiv = $(ob.parentElement);
+// Kept on window: it is referenced from an inline onclick in index.php. That
+// call site is currently inside an HTML comment, but an inline handler can only
+// see globals, so scoping this into a closure would break it the moment the
+// markup is re-enabled.
+window.expandJourney = function expandJourney(ob){
+    let journeyDiv = jQuery(ob.parentElement);
     journeyDiv.find('.stories-wrapper').toggleClass('hide');
-    $(ob).text($(ob).text() == "Hide"?"Expand":"Hide");
+    jQuery(ob).text(jQuery(ob).text() === "Hide" ? "Expand" : "Hide");
     // $.ajax({
     //     url : pv.template_path + '/inc/ajax.php',
     //     type : 'post',
@@ -97,8 +101,9 @@ function expandJourney(ob){
     //         console.log(err);
     //     }
     // })
-}
-$(() => {
+};
+
+jQuery( function ( $ ) {
     $('.stories-wrapper').addClass('hide');
     if ($("#map").length) {
         $("#main").addClass("article-main");

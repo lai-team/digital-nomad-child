@@ -1,7 +1,13 @@
-// Setting variables for controlling up-scroll/down-scroll used for loading new posts
-// Varibales are being reset when user clicks on the map - bv_map/assets/js/main.js
-var load_more_bottom = true;
-var load_more_top = true;
+// Scroll-direction flags controlling when new posts are loaded.
+//
+// These MUST stay on `window`. bv_map/assets/js/main.js writes
+// window.load_more_top / window.load_more_bottom directly when a marker is
+// clicked, to re-enable loading after it has replaced the story list. If they
+// were allowed to fall into the closure below they would become function-scoped,
+// bv_map's writes would be ignored, and infinite scroll would silently stop
+// resuming after a marker click -- with no error to show for it.
+window.load_more_bottom = true;
+window.load_more_top = true;
 
 //Varibales for setting scroll-top buffer,
 // _loadMoreTopBuffer - calculated buffer used for triggering up-scroll
@@ -12,7 +18,7 @@ var _loadMoreTopBuffer,
 //Variable for storing current scrolling position inside .article-main 
 var _currentScrollPos;
 
-$(() => {
+jQuery( function ( $ ) {
     $.fn.isInViewport = function() {
         if (!$(this).length) return false;
         let elementTop = $(this).offset().top;
@@ -25,7 +31,9 @@ $(() => {
     var shouldLoad = true;
     var shouldListen = true;
     var lastElement = null;
-	var postCoords = initCoords.filter(Boolean);
+	// initCoords is localised by category.php / index.php only, so it is absent
+	// on any other template this script happens to load on.
+	var postCoords = Array.isArray( window.initCoords ) ? window.initCoords.filter(Boolean) : [];
 
     function getCoordinatesById(postid) {
         if (!bvVarMapGeoJson) return;
@@ -54,8 +62,6 @@ $(() => {
 	}
 
     var toogleScroll = true;
-    //var load_more_bottom = true;
-    //var load_more_top = true;
 	if ($('#last_post').val()){
 		  $("#post_" + $('#last_post').val())[0].scrollIntoView({
 		                                 //behavior: "auto", // or "auto" or "instant"
@@ -88,31 +94,35 @@ $(() => {
                 // Defining what is the current first child element in the story list
                 _currentTop = $(".article-main #journey-story-wrapper .story-list").children().first();
         
-                //if(!load_more_top)return;
 
                 //  Use #load-more-top instead of this
                 // console.log( pv.template_path + 'custom-widgets/ajax/ajax.php');
-                if(shouldLoad && load_more_top){
+                if(shouldLoad && window.load_more_top){
                     shouldLoad=false;
                     let post_id = $('article.preview_content')[0].getAttribute('id');
                     post_id = post_id.replace('post_','');
                     //console.log(post_id);
                     //console.log(pv.template_path)
                     $.ajax({
-                        url: pv.template_path + '/inc/ajax.php',
+                        url: pv.ajax_url,
                         type: "POST",
                         data: {
                             'data'  : post_id,
                             //'action':'load_more_posts',
                             'action':'load_posts',
+                            '_ajax_nonce': pv.ajax_nonce,
 				'query': bvVarMap.queried_obj,
 			    'journey_id' : $('#journey_id').val()??"",
                             'previous': 0
                         },
                         success: function(data){
-                            data = JSON.parse(data);
+                            // wp_send_json() sends Content-Type: application/json, so jQuery has
+                            // already parsed this. The old endpoint sent text/html, which is
+                            // why an unconditional JSON.parse used to work -- it now throws
+                            // '"[object Object]" is not valid JSON'. Accept either shape.
+                            data = (typeof data === 'string') ? JSON.parse(data) : data;
                             if(!data.html){
-                                load_more_top = false;
+                                window.load_more_top = false;
                                 //$('#load-more-top ').remove();
                             }else{
                             //console.log(data,  'true-top');
@@ -142,8 +152,7 @@ $(() => {
                 }
             } 
             if($('#load-more-bottom') && $('#load-more-bottom').isInViewport()){
-                //if(!load_more_bottom)return;
-                if(shouldLoad && load_more_bottom){
+                if(shouldLoad && window.load_more_bottom){
                     shouldLoad=false;
                     // let post_id = $('.story-post')[0].getAttribute("data-id");
                     let post_id = $('article.preview_content')[$('article.preview_content').length-1].getAttribute('id');
@@ -152,23 +161,31 @@ $(() => {
                     // console.log(pv.template_path)
 
                     $.ajax({
-                        url: pv.template_path + '/inc/ajax.php',
+                        url: pv.ajax_url,
                         type: "POST",
                         data: {
                             'data'  : post_id,
                             'action':'load_posts',
+                            '_ajax_nonce': pv.ajax_nonce,
                             //'action':'load_more_posts',
 				'query': bvVarMap.queried_obj,
 			    'journey_id' : $('#journey_id').val()??"",
                             'previous': 1
                         },
                         success: function(data){
-                            data = JSON.parse(data);
+                            data = (typeof data === 'string') ? JSON.parse(data) : data;
                             //console.log(data,'false-bottom');
                             //console.log(data.coords,'coords');
                             //console.log(postCoords,'postCoords');
-                            if(!data){
-                                load_more_bottom = false;
+                            // Was `if(!data)`, which can never be true: data was
+                            // JSON.parse'd on the line above, so it is always a
+                            // truthy object ({html:"",coords:[]} when exhausted).
+                            // load_more_bottom was therefore never set, and the
+                            // bottom sentinel stayed in view firing an identical
+                            // request forever -- each one booting WordPress.
+                            // The top-scroll branch already tests !data.html.
+                            if(!data.html){
+                                window.load_more_bottom = false;
                                 // $('#load-more-bottom').remove();
                             }else{
                             	$('#content .story-list').append(data.html);
@@ -181,20 +198,24 @@ $(() => {
                             shouldLoad = true
                         }
                     });
-                    delete post_id;
-                };
+                        };
             }
         if (shouldListen) {
             //    console.log(bvVarMapGeoJson);
             let story_posts = $('[id^="post_"]');
             let elements = [];
             //Finds which element is in the viewport and adds its array to elements variable
-            for (i = 0; i < story_posts.toArray().length; i++) {
+            for (let i = 0; i < story_posts.toArray().length; i++) {
                 if ($(story_posts[i]).isInViewport()) {
                     elements.unshift(JSON.parse($(story_posts[i]).attr('id').substring(5)));
                 }
             }
-            if (elements[0] !== 'undefined' ) {
+            // Was `elements[0] !== 'undefined'` -- a comparison against the
+            // string literal, which is always true for a number or undefined,
+            // so the guard did nothing. When nothing is in the viewport,
+            // elements is empty and the code below flew the map to the wrong
+            // post.
+            if (typeof elements[0] !== 'undefined') {
                 // console.log(elements[0], lastElement);
 		//console.log(window.innerHeight ,'Height');
 		//console.log(window.innerWidth ,'Width');
@@ -252,18 +273,19 @@ $(() => {
         }
         update_list_var = setTimeout(function(){
             $.ajax({
-                url: pv.template_path + '/inc/ajax.php',
+                url: pv.ajax_url,
                 type: "POST",
                 data: {
                     's'  : val,
                     'action':'load_posts_from_search',
+                    '_ajax_nonce': pv.ajax_nonce,
                     'journey_id' : $('#journey_id').val()??""
                 },
                 success: function(data){
                     //console.log(data);
                     $('#journey-story-wrapper').hide();
                     $('#search-story-wrapper').show();
-                    data = JSON.parse(data);
+                    data = (typeof data === 'string') ? JSON.parse(data) : data;
                     //console.log(data,'search results');
 
                     $('#search-story-wrapper').html(data.html);
