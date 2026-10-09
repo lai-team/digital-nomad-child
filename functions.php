@@ -23,22 +23,15 @@ function my_theme_enqueue_styles() {
 	$dtp = array(
 		'template_path'  => get_stylesheet_directory_uri(),
 		'test'	=>'test',
+		// admin-ajax endpoint and nonce for the three handlers in inc/ajax.php.
+		// These ride on the existing `pv` object because bv_map already reads
+		// pv.template_path, so it can pick them up without this theme having
+		// to localise anything onto a plugin's script handle.
+		'ajax_url'    => admin_url( 'admin-ajax.php' ),
+		'ajax_nonce'  => wp_create_nonce( 'dn_ajax' ),
 	);
 	wp_localize_script( 'child-script', 'pv', $dtp );
 }
-
-//add_action( 'digitalnomad_before_inner_content', 'dn_theme_top' );
-function dn_theme_top(){
-
-
-}
-
-//add_action('digitalnomad_after_inner_content','dn_theme_bottom' ); 
-function dn_theme_bottom(){
-
-
-}
-
 
 /*
  * Add MAP tag in header
@@ -53,6 +46,10 @@ function addMapForPost() {
 	}
 	echo "<div class='post_map_image_container'>";
 	echo do_shortcode("[bv_map_shortcode post_id='" . get_the_ID() . "' height='40vh']");
+	// The closing tag was missing, so every element after this -- #cell, the
+	// inner content, the archive title, the rest of the document -- was nested
+	// inside .post_map_image_container.
+	echo "</div>";
 }
 
 function digitalnomad_basic_footer_text() {
@@ -80,19 +77,20 @@ function digitalnomad_get_the_date() {
 		$published = strtotime(get_post_meta(get_the_ID() , '_EventStartDate',true));
 		$enddate = strtotime(get_post_meta(get_the_ID() , '_EventEndDate',true));
 		$duration = sprintf( esc_html__( ' %s', 'digital-nomad' ), human_time_diff( $published, $enddate ) );    
-		$code .= '<time class="published" datetime="' . date( 'c', $published ) . '">' . date( $date_format, $published ) . " &mdash " . date($date_format,$enddate  ) . '</time>';
+		$code .= '<time class="published" datetime="' . date( 'c', $published ) . '">' . date( $date_format, $published ) . " &mdash; " . date($date_format,$enddate  ) . '</time>';
 		$code .= ', <span class="last_update_text">' . __( 'for', 'digital-nomad' ) . '</span> <time class="updated" datetime="' . date( 'c', $published ) . '">' . $duration . '</time>';
 	}else{
 		$published = esc_attr( get_the_date( 'U' ) );
 		$code .= '<time class="published" datetime="' . date( 'c', $published ) . '">' . date( $date_format, $published ) . '</time>';
 		if ($published != $updated) {
-			$code .= ', <span class="last_update_text">' . __( 'written:', 'digital-nomad' ) . '</span> <time class="updated" datetime="' . date( 'c', $updated ) . '">' . date_i18n( $date_format, $updated ) . '</time>';
+			// Was 'written:' -- this is the *modified* timestamp, so the label
+		// asserted the opposite of the truth. The parent uses 'updated:'.
+		$code .= ', <span class="last_update_text">' . __( 'updated:', 'digital-nomad' ) . '</span> <time class="updated" datetime="' . date( 'c', $updated ) . '">' . date_i18n( $date_format, $updated ) . '</time>';
 		}
 	}
 	return $code;
 }
 
-//add_action( 'digitalnomad_for_footer', 'digitalnomad_basic_footer_text' );
 function digitalnomad_get_the_date_ago() {
 	$date_format = get_option( 'date_format' );
 	$code = '';
@@ -117,23 +115,6 @@ function digitalnomad_get_the_date_ago() {
 	$code .= '<time class="published" datetime="' . date( 'c', $published ) . '" title="' . date( $date_format, $published ) . '">' . date( $date_format, $published ) . '<br>'. $ago. '</time>';
 
 	return $code;
-}
-
-function digitalnomad_get_forecast_days(){
-		$dt_start = strtotime(get_post_meta(get_the_ID() , '_EventStartDate',true));
-		$dt_end = strtotime(get_post_meta(get_the_ID() , '_EventEndDate',true));
-		$dt_current = current_time( 'timestamp' );
-		$dt_forecast_start = max($dt_start , $dt_current);
-		$dt_forecast_end = min($dt_forecast_start + (86400 * 6) , $dt_end, FORECAST_DAYS_AHEAD_BASIC + $dt_current);
-		$dt_duration = $dt_forecast_end - $dt_forecast_start;
-		if($dt_duration > 0){
-			$days = ceil( $dt_duration / 86400 );
-			if( ($days < 7) && ($dt_start > $dt_current )) $dt_forecast_start-=86400;
-			if( ($days < 6) && ($dt_forecast_end < FORECAST_DAYS_AHEAD_BASIC + $dt_current - 86400) ) $dt_forecast_end+=86400; 
-			return array($dt_forecast_start, $dt_forecast_end);
-		}else return;
-		//define('FORECAST_DAYS_AHEAD_PREMIUM', 86400 * 15);
-		//define('FORECAST_DAYS_AHEAD_BASIC', 86400 * 15);
 }
 
 /*
@@ -179,45 +160,17 @@ function dn_loadn_preview($post_id,$previous=true,$load_N=5,$journey_id=null){
 	return $returnArray;
 }
 
-function dn_loadn_preview_for_ajax($post_id,$previous=true,$load_N=5,$journey_id=null){
-	global $post; 
-        $post = get_post($post_id);
-        $journey_ids = $journey_id?array($journey_id):array();
-        $htmlArray = array();
-        $coordArray = array();
-        $returnArray = array();
-	#if($journey_id) $previous=false;
-        do{
-                $new_post = bv_get_adjacent_post( $post, $previous,  $journey_ids);
-                   //logErrors($load_N . ' '.$new_post->post_title . ' tiTle '.$post->post_title);
-                if( $new_post && ($new_post->ID != $post->ID )){
-                        $post=$new_post;
-                        if($geom_point = bv_get_geompoint($post) ){
-                                $coordArray[] = $geom_point;
-                        }
-                        $htmlArray[] = digitalnomad_post_preview_layout_for_ajax(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-                        $load_N -= 1;
-                }else{
-                        $post= $new_post;
-                }
-        }while( $new_post && $load_N > 0);
-        if(!$previous){
-                $htmlArray = array_reverse($htmlArray);
-                $coordArray = array_reverse($coordArray);
-        }
-        $returnArray['html'] = implode(PHP_EOL,$htmlArray);
-        $returnArray['coords'] = $coordArray;
-
-        //echo json_encode($returnArray);
-	return $returnArray;
-}
-
 function digitalnomad_post_preview_layout_for_ajax() {
 	if (!has_excerpt()) {
 		$excerpt = wp_trim_words( wp_strip_all_tags( get_the_content( '' ), true ), 22 );
 	} else {
 		$excerpt = trim( wp_strip_all_tags( get_the_excerpt(), true ) );
 	}
+
+	// Only assigned in three of the branches below; a post with no thumbnail,
+	// no digitalnomad_default_feature_image theme mod and no decodable
+	// geom_point left it undefined, warning and emitting url('').
+	$feature_image_src = '';
 
 	if (has_post_thumbnail()) {
 		$feature_image_arr = wp_get_attachment_image_src( get_post_thumbnail_id(), 'large' );
@@ -239,7 +192,9 @@ function digitalnomad_post_preview_layout_for_ajax() {
 	$layout = '';
 
 	if (get_theme_mod( 'digitalnomad_blazy_lazyload', true )) {
-		$layout .= '<article id="post_' . get_the_ID() . '" class="' . implode( ' ', get_post_class( 'preview_content basic_bg b-lazy' ) ) . '" style="background-image: url(\'' . $feature_image_src . '\')">' . PHP_EOL;
+		// esc_url() here too: the very next line already escapes the same value
+		// for the <noscript> block, so this one was simply missed.
+		$layout .= '<article id="post_' . get_the_ID() . '" class="' . implode( ' ', get_post_class( 'preview_content basic_bg b-lazy' ) ) . '" style="background-image: url(\'' . esc_url( $feature_image_src ) . '\')">' . PHP_EOL;
 		$layout .= '<noscript><style>#post_' . get_the_ID() . ' {' . $style . '}</style></noscript>' . PHP_EOL;
 	} else {
 		$layout .= '<article class="' . implode( ' ', get_post_class( 'preview_content basic_bg' ) ) . '" style="' . $style . '">' . PHP_EOL;
@@ -285,7 +240,18 @@ function digitalnomad_preview_layout($top=true){
 		$layout .= '</div>';
 		echo $layout;
 		do_action('digitalnomad_after_inner_content');
-		if(!is_home(  ))echo "<input type='hidden' id='journey_id' value=".get_queried_object(  )->term_id.">";
+		/*
+ * get_queried_object() is only a WP_Term on a term archive. index.php is also
+ * the fallback template for date archives (null), author archives (WP_User)
+ * and post-type archives (WP_Post_Type), so this warned on PHP 8 and emitted
+ * `value=>`. list-stories.js then read an empty journey_id and silently
+ * dropped the category restriction from every subsequent AJAX load.
+ * The attribute was also unquoted.
+ */
+$bv_queried = get_queried_object();
+if ( $bv_queried instanceof WP_Term ) {
+	echo '<input type="hidden" id="journey_id" value="' . esc_attr( $bv_queried->term_id ) . '">';
+}
 		echo '<span id="load-more-bottom" style="width: 100%;height: 1px;margin-top: -100vh;display: block;"></span> </div> ';
 		echo digitalnomad_posts_nav_link(); 
 		echo '</section>';
@@ -294,8 +260,173 @@ function digitalnomad_preview_layout($top=true){
 	}
 }
 
-function digitalnomad_preview_layout_for_post($post_obj){
-	global $post;
-	$post = $post_obj;
-	return digitalnomad_post_preview_layout_for_ajax(); 
+/* -------------------------------------------------------------------------
+ * AJAX handlers
+ *
+ * These three actions used to live in inc/ajax.php, a file that bootstrapped
+ * WordPress by path-munging __DIR__ to find wp-load.php and then read $_POST at
+ * file scope. It was directly addressable at <theme-uri>/inc/ajax.php and had
+ * no nonce and no capability check anywhere in the path. Confirmed against the
+ * live site: an unauthenticated fetch with credentials omitted returned HTTP
+ * 200 and a full payload.
+ *
+ * The disclosure was that get_post() does not check read permission, while
+ * digitalnomad_post_preview_layout_for_ajax() emits the post title and the
+ * first 22 words of its body. Any post id therefore returned that much of any
+ * post, including drafts, pending and member-restricted ones.
+ *
+ * They now run through admin-ajax.php, so WordPress is already loaded and the
+ * endpoint is not separately addressable. The action names are unchanged, so
+ * they map straight onto wp_ajax_/wp_ajax_nopriv_ hooks.
+ * ---------------------------------------------------------------------- */
+
+/**
+ * Whether the current request may read a given post.
+ *
+ * Published posts are public. Anything else requires the capability, which is
+ * what closes the disclosure; the nonce is defence in depth, not authorisation.
+ *
+ * @param int $post_id Post ID.
+ * @return bool
+ */
+function dn_ajax_can_read_post( $post_id ) {
+	$post_id = absint( $post_id );
+
+	if ( ! $post_id ) {
+		return false;
+	}
+
+	$post_obj = get_post( $post_id );
+
+	if ( ! $post_obj ) {
+		return false;
+	}
+
+	if ( 'publish' === $post_obj->post_status ) {
+		return true;
+	}
+
+	return current_user_can( 'read_post', $post_id );
 }
+
+/**
+ * Shared entry checks for every handler below.
+ *
+ * @return array{post_id:int,journey_id:int} Sanitised request values.
+ */
+function dn_ajax_verify() {
+	check_ajax_referer( 'dn_ajax' );
+
+	return array(
+		'post_id'    => isset( $_POST['data'] ) ? absint( $_POST['data'] ) : 0,
+		'journey_id' => isset( $_POST['journey_id'] ) ? absint( $_POST['journey_id'] ) : 0,
+	);
+}
+
+/**
+ * Render a post and its neighbours, for jumping to a story from the map.
+ */
+function dn_ajax_jumpto_post() {
+	$req = dn_ajax_verify();
+
+	if ( ! dn_ajax_can_read_post( $req['post_id'] ) ) {
+		wp_send_json_error( array( 'message' => 'Not found' ), 404 );
+	}
+
+	global $post;
+	$post = get_post( $req['post_id'] ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+	setup_postdata( $post );
+
+	$return = array(
+		'html'   => digitalnomad_post_preview_layout_for_ajax(),
+		'coords' => array( bv_get_geompoint( $post ) ),
+	);
+
+	$top = dn_loadn_preview( $req['post_id'], false, 3, $req['journey_id'] );
+	if ( ! empty( $top['html'] ) ) {
+		$return['html'] = $top['html'] . $return['html'];
+	}
+	if ( ! empty( $top['coords'] ) ) {
+		$return['coords'] = array_merge( $top['coords'], $return['coords'] );
+	}
+
+	$bottom = dn_loadn_preview( $req['post_id'], true, 3, $req['journey_id'] );
+	if ( ! empty( $bottom['html'] ) ) {
+		$return['html'] = $return['html'] . $bottom['html'];
+	}
+	if ( ! empty( $bottom['coords'] ) ) {
+		$return['coords'] = array_merge( $return['coords'], $bottom['coords'] );
+	}
+
+	wp_reset_postdata();
+
+	wp_send_json( $return );
+}
+add_action( 'wp_ajax_jumpto_post', 'dn_ajax_jumpto_post' );
+add_action( 'wp_ajax_nopriv_jumpto_post', 'dn_ajax_jumpto_post' );
+
+/**
+ * Load the next or previous page of story previews.
+ */
+function dn_ajax_load_posts() {
+	$req = dn_ajax_verify();
+
+	if ( ! dn_ajax_can_read_post( $req['post_id'] ) ) {
+		wp_send_json_error( array( 'message' => 'Not found' ), 404 );
+	}
+
+	$previous = ! empty( $_POST['previous'] ) && 'false' !== $_POST['previous'];
+
+	wp_send_json( dn_loadn_preview( $req['post_id'], $previous, 7, $req['journey_id'] ) );
+}
+add_action( 'wp_ajax_load_posts', 'dn_ajax_load_posts' );
+add_action( 'wp_ajax_nopriv_load_posts', 'dn_ajax_load_posts' );
+
+/**
+ * Search within a journey.
+ */
+function dn_ajax_load_posts_from_search() {
+	dn_ajax_verify();
+
+	$search     = isset( $_POST['s'] ) ? sanitize_text_field( wp_unslash( $_POST['s'] ) ) : '';
+	$journey_id = isset( $_POST['journey_id'] ) ? absint( $_POST['journey_id'] ) : 0;
+
+	if ( '' === $search ) {
+		wp_send_json( array( 'html' => '', 'coords' => array(), 'empty' => '' ) );
+	}
+
+	$args = array(
+		's'           => $search,
+		'post_type'   => 'post',
+		'post_status' => 'publish',
+	);
+
+	if ( $journey_id ) {
+		$args['cat']   = $journey_id;
+		$args['order'] = 'ASC';
+	}
+
+	$journey = new WP_Query( $args );
+
+	$return = array(
+		'html'   => '',
+		'coords' => array(),
+	);
+
+	while ( $journey->have_posts() ) {
+		$journey->the_post();
+		$return['html'] .= digitalnomad_post_preview_layout_for_ajax();
+		// Was bv_get_geompoint($post) with $post never assigned in this scope.
+		$return['coords'][] = bv_get_geompoint( get_post() );
+	}
+
+	wp_reset_postdata();
+
+	if ( '' === $return['html'] ) {
+		$return['empty'] = "<h3 class='bs_search_emply'>" . esc_html__( 'No posts found', 'digital-nomad-child' ) . '</h3>';
+	}
+
+	wp_send_json( $return );
+}
+add_action( 'wp_ajax_load_posts_from_search', 'dn_ajax_load_posts_from_search' );
+add_action( 'wp_ajax_nopriv_load_posts_from_search', 'dn_ajax_load_posts_from_search' );
