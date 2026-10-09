@@ -1,0 +1,584 @@
+/*
+Theme Name: Around the World
+Theme URI: https://www.jasom.net/digital-nomad-wordpress-theme/
+Description: Mobile-first one-column theme for digital nomads like you. It's not in theme, it's in content! But good theme also helps...
+Author: Jasom Dotnet
+Author URI: https://www.jasom.net
+Template:     digital-nomad
+GitLab Theme URI: https://gitlab.com/beauvoyage/digital-nomad-child
+Version: 1.0.1
+License: GNU General Public License v2 or later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
+Tags: blog, one-column, custom-background, custom-header, custom-logo, featured-image-header, featured-images, full-width-template, theme-options, threaded-comments, translation-ready
+Text Domain: digital-nomad-child
+*/
+:root{
+	--map-width-widescreen : 45vw; 
+	--map-height-nonwidescreen : 40vh; 
+	--stories-list-width-widescreen : 55vw; 
+}
+#headelements{
+	height: 20vh !important;
+}
+/* unset header image */
+header #header:not(.post_page) {
+    background-image: unset;
+}
+/* set header height */
+header div#header:not(.post_page){
+    height: var(--map-height-nonwidescreen);
+}
+/* set position of map container in header */
+div#header div.post_map_image_container{
+    position: fixed;
+    height: var(--map-height-nonwidescreen);
+    width: 100%;
+}
+#footer {
+	color: #fff;
+	display: table; /*ie9*/
+	width: 100%;
+	height: 5vh;  
+	background-color: #000;
+}
+.preview_content a{
+	height: 60vh !important;
+}
+.article-main{
+	position: fixed;
+	width: 100%;
+	overflow-y: scroll;
+	height: 60vh;
+}
+
+body.wide header div#header:not(.post_page){
+	height: 100vh;
+	width: var(--map-width-widescreen);
+}
+body.wide div#header div.post_map_image_container{
+	height: 100vh;
+	width: var(--map-width-widescreen);
+}
+body.wide .article-main{
+	height: 100vh;
+	width: var(--stories-list-width-widescreen);
+	top:0;
+	right:0;
+}
+body.wide #map{
+	height: 100vh;
+}
+body.wide{
+	overflow-y: hidden;
+}
+
+.journey-name{
+	max-width: var(--stories-list-width-widescreen) !important;
+
+	text-align: center;
+	padding: 20px 0;
+	min-width: 100%;
+    max-width: 100% !important;
+	background-color: #333;
+	color:white;
+	font-family: 'Niconne';
+	/*font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;*/
+}
+.journey-name span{
+	font-size: 2.4rem;
+}
+
+
+.hide{
+	opacity: 0;
+	height: 0 !important;
+	overflow: hidden;
+}
+#bs-search-input{
+	/*width: 100vw;
+	top: var(--map-height-nonwidescreen);
+	text-align: center;
+	position: fixed;
+	height: 50px;*/
+	background: none;
+    border: none;
+	border-radius: 0;
+	box-shadow: none;
+    color: inherit;
+    font-size: 1.3rem;
+    letter-spacing: -0.0277em;
+    height: 3.8rem;
+    max-width: calc(100% + 2rem);
+}
+.bv-search-container {
+	width: 100%;
+}
+.bs_search_emply{
+	color:white;
+	width: 100%;
+	text-align: center;
+}
+body.wide #bs-search-input{
+	top:0;
+	right: 0;
+	/*width: var(--stories-list-width-widescreen);*/
+}
+#search-story-wrapper, #journey-story-wrapper{
+	background-color: #333;
+	min-height: 100%;
+	padding-top: 100vh;
+}
+.digitalnomad_post_container{
+	height: calc( 100% - 50px);
+}
+
+/* Search bar header css */
+.header-inner {
+	position: sticky;
+	height: 65px;
+    background: white;
+    opacity: 0.9;
+	top: 0px;
+	transition: background 0.5s;
+}
+.section-inner {
+	margin-left: auto;
+	margin-right: auto;
+	max-width: 120rem;
+	width: 100%;
+}
+
+.admin-bar .header-inner {
+	top: 32px;
+}
+
+.header-titles-wrapper {
+	align-items: center;
+	display: flex;
+	justify-content: center;
+	padding: 0 4rem;
+	text-align: center;
+}
+
+/* Header Toggles */
+.header-toggles {
+	display: none;
+}
+
+.header-inner .toggle {
+	align-items: center;
+	display: flex;
+	overflow: visible;
+	padding: 0 1.5rem;
+}
+
+.header-inner .toggle svg {
+	display: block;
+	position: relative;
+	z-index: 1;
+}
+
+.header-inner .toggle path {
+	fill: currentColor;
+}
+
+.toggle-inner {
+	display: flex;
+	justify-content: center;
+	/*height: 2.3rem;*/
+	position: relative;
+}
+
+.toggle-icon {
+	display: block;
+	overflow: hidden;
+}
+
+.toggle-inner .toggle-text {
+	color: black;
+	position: absolute;
+	top: calc(100% + 0.1rem);
+	width: auto;
+	white-space: nowrap;
+	word-break: break-all;
+}
+
+.overlay-header .toggle-text {
+	color: inherit;
+}
+
+.header-inner .toggle:focus .toggle-text,
+.header-inner .toggle:hover .toggle-text {
+	text-decoration: underline;
+}
+
+/* Toggles */
+.toggle {
+	-moz-appearance: none;
+	-webkit-appearance: none;
+	color: inherit;
+	cursor: pointer;
+	font-family: inherit;
+	position: relative;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	text-align: inherit;
+	user-select: none;
+}
+
+button.toggle {
+	background: none;
+	border: none;
+	box-shadow: none;
+	border-radius: 0;
+	font-size: inherit;
+	font-weight: 400;
+	letter-spacing: inherit;
+	padding: 0;
+	text-transform: none;
+}
+
+/* Search Toggle */
+.search-toggle {
+	position: absolute;
+	left: 0;
+	top: 0.7rem;
+}
+ 
+/* Search Modal */
+.search-modal {
+	background: rgba(0, 0, 0, 0.2);
+	/*display: none;*/
+	opacity: 0;
+	position: absolute;
+	bottom: 0;
+	left: -9999rem;
+	top: 0;
+	transition: opacity 0.2s linear, left 0s 0.2s linear;
+	width: 100%;
+	z-index: 999;
+}
+
+.search-modal-inner {
+	background: #fff;
+	transform: translateY(-100%);
+	transition: transform 0.15s linear, box-shadow 0.15s linear;
+}
+
+.search-modal-inner .section-inner {
+	display: flex;
+	justify-content: space-between;
+	max-width: 168rem;
+}
+
+.search-modal.active {
+	left: 0;
+	opacity: 1;
+	transition: opacity 0.2s linear;
+}
+
+.search-modal.active .search-modal-inner {
+	box-shadow: 0 0 2rem 0 rgba(0, 0, 0, 0.08);
+	transform: translateY(0);
+	transition: transform 0.25s ease-in-out, box-shadow 0.1s 0.25s linear;
+}
+
+button.search-untoggle {
+	align-items: center;
+	display: flex;
+	flex-shrink: 0;
+	justify-content: center;
+	padding: 0 2.5rem;
+}
+
+.search-modal button.search-untoggle {
+	color: inherit;
+}
+
+.search-modal.active .search-untoggle {
+	animation: popIn both 0.3s 0.2s;
+}
+
+.search-untoggle svg {
+	/*height: 1.5rem;*/
+	transition: transform 0.15s ease-in-out;
+	/*width: 1.5rem;*/
+}
+
+.search-untoggle:focus svg,
+.search-untoggle:hover svg {
+	transform: scale(1.15);
+}
+
+/* Modal Search Form */
+.search-modal form {
+	margin: 0;
+	position: relative;
+	width: 100%;
+}
+
+.search-modal .search-field {
+	background: none;
+	border: none;
+	border-radius: 0;
+	color: inherit;
+	font-size: 2rem;
+	letter-spacing: -0.0277em;
+	height: 8.4rem;
+	margin: 0 0 0 -2rem;
+	max-width: calc(100% + 2rem);
+	padding: 0 0 0 2rem;
+	width: calc(100% + 2rem);
+}
+
+.search-modal .search-field::-webkit-input-placeholder {
+	color: inherit;
+}
+
+.search-modal .search-field:-ms-input-placeholder {
+	color: inherit;
+}
+
+.search-modal .search-field::-moz-placeholder {
+	color: inherit;
+	line-height: 4;
+}
+
+.search-modal .search-submit {
+	position: absolute;
+	right: -9999rem;
+	top: 50%;
+	transform: translateY(-50%);
+}
+
+.search-modal .search-submit:focus {
+	right: 0;
+}
+
+/* Cover Modals */
+.cover-modal {
+	display: none;
+	-ms-overflow-style: none;
+	overflow: -moz-scrollbars-none;
+}
+
+.cover-modal::-webkit-scrollbar {
+	display: none !important;
+}
+
+.cover-modal.show-modal {
+	display: block;
+	cursor: pointer;
+}
+
+.cover-modal.show-modal > * {
+	cursor: default;
+}
+
+/* Navigation Toggle */
+.nav-toggle {
+	position: absolute;
+	/*bottom: 0;*/
+	right: 0;
+	top: 0.7rem;
+}
+
+.nav-toggle .toggle-inner {
+	padding-top: 0.8rem;
+	/*height: 1.5rem;*/
+}
+#spinner{
+	display: none;
+}
+
+.header-inner.scrolled .search-toggle, .header-inner.scrolled .nav-toggle {
+	background-color: rgba(0, 0, 0, 0.3);
+    background-size: 40% auto;
+    color: white;
+    font-weight: 600;
+	opacity: 0.7;
+	padding: 0rem 1.5rem !important;
+	height: 65px;
+	top: 0;
+	transition: background-color 4s;
+}
+
+.header-inner.scrolled .nav-toggle .toggle-inner {
+	padding-top: 0px;
+}
+.header-inner.scrolled .toggle svg {
+	display: inline-block;
+}
+.header-inner.scrolled .toggle-inner .toggle-text {
+	color: #fff;
+	padding: 0 0px 0 10px;
+	position: relative;
+	display: none;
+}
+.header-inner.scrolled {
+	background: transparent;
+	transition: background 0.5s;
+}
+
+.remove-scroll {
+	overflow-y: hidden;
+}
+
+/* 
+  ##Device = Tablets, Ipads (portrait)
+  ##Screen = B/w 768px to 1024px
+*/
+
+@media (min-width: 768px) and (max-width: 1024px) and (orientation: portrait) {
+	.header-inner {
+        height: 35px;
+		background: transparent;
+		position: fixed;
+		top: unset;
+	}
+	.header-inner .nav-toggle .toggle-inner {
+		padding-top: 0px;
+	}
+	.header-inner .toggle svg {
+		display: inline-block;
+	}
+    .header-inner .search-toggle, .header-inner .nav-toggle,
+    .header-inner.scrolled .search-toggle, .header-inner.scrolled .nav-toggle {
+		background-color: rgba(0, 0, 0, 0.3);
+		background-size: 40% auto;
+		color: white;
+		font-weight: 600;
+		opacity: 0.7;
+		padding: 0 1rem !important;
+		height: 40px;
+        top: 0;
+	}
+	.header-inner .toggle-inner .toggle-text {
+		color: #fff;
+		padding: 0 0px 0 10px;
+		position: relative;
+		display: none;
+	}
+    .header-inner .search-toggle, .header-inner .nav-toggle,
+    .header-inner.scrolled .search-toggle, .header-inner.scrolled .nav-toggle {
+		background-color: rgba(0, 0, 0, 0.3);
+		background-size: 40% auto;
+		color: white;
+		font-weight: 600;
+		opacity: 0.7;
+		padding: 0 1rem !important;
+		height: 40px;
+        top: 0;
+	}
+	.header-inner .toggle-inner .toggle-text {
+		color: #fff;
+		padding: 0 0px 0 10px;
+		position: relative;
+		display: none;
+	}
+	
+	.admin-bar .header-inner {
+		top: unset;
+	}
+  }
+  
+  /* 
+	##Device = Tablets, Ipads (landscape)
+	##Screen = B/w 768px to 1024px
+  */
+  
+  @media (min-width: 768px) and (max-width: 1024px) and (orientation: landscape) {
+
+	.header-inner {
+		height: 60px;
+	}
+	.header-inner .toggle-inner .toggle-text {
+		font-size: 13px;
+	}
+	.header-inner.scrolled .search-toggle, .header-inner.scrolled .nav-toggle {
+		padding: 0 1rem !important;
+		height: 40px;
+	}
+	.header-inner .toggle {
+        padding: 0 1rem;
+    }
+	.header-inner .nav-toggle .toggle-inner {
+		padding-top: 0px;
+	}
+	.header-inner .toggle svg {
+		display: inline-block;
+	}
+  }
+  
+  /* 
+	##Device = Low Resolution Tablets, Mobiles (Landscape)
+	##Screen = B/w 481px to 767px
+  */
+  
+  @media (min-width: 481px) and (max-width: 767px) and (orientation: landscape) {
+
+	.header-inner {
+		height: 60px;
+	}
+	.header-inner .toggle-inner .toggle-text {
+		font-size: 13px;
+	}
+	.header-inner.scrolled .search-toggle, .header-inner.scrolled .nav-toggle {
+		padding: 0 1rem !important;
+		height: 40px;
+	}
+	.header-inner .toggle {
+        padding: 0 1rem;
+    }
+	.header-inner .nav-toggle .toggle-inner {
+		padding-top: 0px;
+	}
+	.header-inner .toggle svg {
+		display: inline-block;
+	}
+  }
+  
+  /* 
+	##Device = Most of the Smartphones Mobiles (Portrait)
+	##Screen = B/w 320px to 479px
+  */
+  
+  @media (min-width: 320px) and (max-width: 480px) and (orientation: portrait) {
+	
+	.header-inner {
+		height: 35px;
+		background: transparent;
+		position: fixed;
+		top: unset;
+	}
+	.header-inner .search-toggle, .header-inner .nav-toggle,
+	.header-inner.scrolled .search-toggle, .header-inner.scrolled .nav-toggle {
+		background-color: rgba(0, 0, 0, 0.3);
+		background-size: 40% auto;
+		color: white;
+		font-weight: 600;
+		opacity: 0.7;
+		padding: 0 1rem !important;
+		height: 40px;
+		top: 0;
+	}
+	.header-inner .nav-toggle .toggle-inner {
+		padding-top: 0px;
+	}
+	.header-inner .toggle svg {
+		display: inline-block;
+	}
+	.header-inner .toggle-inner .toggle-text {
+		color: #fff;
+		padding: 0 0px 0 10px;
+		position: relative;
+		display: none;
+	}
+
+	.admin-bar .header-inner {
+		top: unset;
+	}
+  }

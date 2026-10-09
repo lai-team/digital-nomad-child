@@ -1,0 +1,16 @@
+{
+    "category_exclude_list" : {
+        "exclude_item_1" : {
+            "name" : "Uncategorized",
+            "slug" : "uncategorized"
+        },
+        "exclude_item_2" : {
+            "name" : "Private Contents",
+            "slug" : "private"
+        },
+        "exclude_item_3" : {
+            "name" : "Standalone Posts",
+            "slug" : "standalone"
+        }
+    }
+}

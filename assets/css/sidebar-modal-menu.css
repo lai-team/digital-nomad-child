@@ -1,0 +1,253 @@
+/*
+Theme Name: Around the World
+Description: Style for modal menu used in sidebar feature
+GitLab Theme URI: https://gitlab.com/beauvoyage/digital-nomad-child
+Version: 1.0.0
+Text Domain: digital-nomad-child
+*/
+
+/* ------------------------------*/
+/*	1. Menu Modal
+/* ----------------------------- */
+
+.menu-modal {
+	background: #fff;
+	display: none;
+	opacity: 0;
+	overflow-y: auto;
+	overflow-x: hidden;
+	-webkit-overflow-scrolling: touch;
+	position: absolute;
+	bottom: 0;
+	left: -99999rem;
+	right: 99999rem;
+	top: 0;
+	transition: opacity 0.25s ease-in, left 0s 0.25s, right 0s 0.25s;
+    z-index: 99999999;
+    height: 60vh;
+}
+
+.menu-modal.show-modal {
+	display: flex;
+}
+
+.menu-modal.active {
+	left: 0;
+	opacity: 1;
+	right: 0;
+	transition: opacity 0.25s ease-out;
+}
+
+.menu-modal-inner {
+	background: #fff;
+	display: flex;
+	justify-content: stretch;
+	overflow: auto;
+	-ms-overflow-style: auto;
+	width: 100%;
+}
+
+.menu-wrapper {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+    position: relative;
+    margin: 0 25px;
+}
+
+button.close-nav-toggle {
+	align-items: center;
+	display: flex;
+	font-size: 1.2rem;
+	font-weight: 500;
+	justify-content: flex-end;
+	padding: 2rem 0;
+    width: 100%;
+    background: none;
+	border: none;
+	box-shadow: none;
+	border-radius: 0;
+	letter-spacing: inherit;
+    text-transform: none;
+    cursor: pointer;
+}
+
+.header-inner .close-nav-toggle:focus .toggle-text,
+.header-inner .close-nav-toggle:hover .toggle-text {
+	text-decoration: underline;
+}
+
+button.close-nav-toggle .toggle-text {
+	margin-right: 1.6rem;
+}
+
+/* Main Menu */
+
+.modal-menu {
+    margin: 0px;
+    padding: 0px;
+}
+
+.modal-menu li {
+	border-color: #dedfdf;
+	border-style: solid;
+	border-width: 0.1rem 0 0 0;
+	display: flex;
+	flex-wrap: wrap;
+	line-height: 1;
+	justify-content: flex-start;
+	margin: 0;
+}
+
+.modal-menu > li > a,
+.modal-menu > li > .ancestor-wrapper > a {
+	text-align: left;
+}
+
+.modal-menu > li:last-child {
+	border-bottom-width: 0.1rem;
+}
+
+.modal-menu .ancestor-wrapper {
+	display: flex;
+	justify-content: space-between;
+	width: 100%;
+}
+
+.modal-menu a {
+	display: block;
+	padding: 1rem 1rem;
+	text-decoration: none;
+	width: 100%;
+}
+
+.modal-menu a.active {
+	font-weight: bold;
+    text-decoration: underline;
+    color: darkblue;
+}
+
+.modal-menu a:focus,
+.modal-menu a:hover,
+.modal-menu li.current-menu-item > .ancestor-wrapper > a,
+.modal-menu li.current_page_ancestor > .ancestor-wrapper > a {
+	text-decoration: underline;
+}
+
+.modal-menu ul {
+	/*display: none;*/
+	margin: 0;
+	width: 100%;
+	padding: 0px;
+	text-align: left;
+	max-height: 0;
+	visibility: hidden;
+	transition: visibility 0.3s, max-height 0.5s ease-out;
+}
+
+body.wide .menu-modal {
+	height: 100vh;
+}
+
+.hierarchy_level_2 .ancestor-wrapper{
+	padding-left: 20px;
+}
+
+.hierarchy_level_3 .ancestor-wrapper{
+	padding-left: 30px;
+}
+
+.hierarchy_level_4 .ancestor-wrapper{
+	padding-left: 40px;
+}
+
+.hierarchy_level_5 .ancestor-wrapper{
+	padding-left: 50px;
+}
+
+.hierarchy_level_6 .ancestor-wrapper{
+	padding-left: 60px;
+}
+
+.hierarchy_level_7 .ancestor-wrapper{
+	padding-left: 70px;
+}
+
+.hierarchy_level_8 .ancestor-wrapper{
+	padding-left: 80px;
+}
+
+.hierarchy_level_9 .ancestor-wrapper{
+	padding-left: 90px;
+}
+
+.hierarchy_level_10 .ancestor-wrapper {
+	padding-left: 100px;
+}
+/** Category widget submenu **/
+
+button.toggle.sub-menu-toggle.fill-children-current-color {
+	border-left: 0.1rem solid #dedfdf;
+    margin: 10px 0;
+    padding: 0 2.5rem;
+}
+
+button.toggle.sub-menu-toggle.fill-children-current-color svg {
+	transition: transform 0.15s linear;
+}
+
+button.toggle.sub-menu-toggle.fill-children-current-color.active svg {
+	transform: rotate(180deg);
+}
+.modal-menu ul.active {
+	/*display: block;*/
+	visibility: visible;
+	max-height: 1000px;
+	transition: visibility 1.3s, max-height 1s ease-in;
+}
+
+/** END of - Category widget submenu **/
+
+/* 
+  ##Device = Tablets, Ipads (portrait)
+  ##Screen = B/w 768px to 1024px
+*/
+
+@media (min-width: 768px) and (max-width: 1024px) and (orientation: portrait) {
+	.expanded-menu {
+		padding-bottom: 60%;
+	}
+  }
+  
+  /* 
+	##Device = Tablets, Ipads (landscape)
+	##Screen = B/w 768px to 1024px
+  */
+  
+  @media (min-width: 768px) and (max-width: 1024px) and (orientation: landscape) {
+	.expanded-menu {
+		padding-bottom: 60%;
+	}
+  }
+  
+  /* 
+	##Device = Low Resolution Tablets, Mobiles (Landscape)
+	##Screen = B/w 481px to 767px
+  */
+  
+  @media (min-width: 481px) and (max-width: 767px) and (orientation: landscape) {
+	.expanded-menu {
+		padding-bottom: 60%;
+	}
+  }
+  
+  /* 
+	##Device = Most of the Smartphones Mobiles (Portrait)
+	##Screen = B/w 320px to 479px
+  */
+  
+  @media (min-width: 320px) and (max-width: 480px) and (orientation: portrait) {
+	.expanded-menu {
+		padding-bottom: 60%;
+	}
+  }
